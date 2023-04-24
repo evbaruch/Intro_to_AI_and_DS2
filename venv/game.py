@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 EMPTY, BLACK, WHITE = '.', '●', '○'
 HUMAN, COMPUTER = '●', '○'
 
@@ -78,64 +79,39 @@ def inputMove(s):
 
 def value(s):
     #Returns the heuristic value of s
-    COMPUTER_value =0
-    HUMAN_value =0
-    EMPTY_value = 0
-    """
-     Calculates the heuristic value for the given board and player.
-    
-     Args:
-       board: The current board state.
-       player: The current player.
-    
-     Returns:
-       The heuristic value for the given board and player.
-     """
-    # Calculate the number of pieces for each player.
-    # Calculate the number of empty squares.
     COMPUTER_value = s[0].count(COMPUTER)
     HUMAN_value = s[0].count(HUMAN)
     EMPTY_value = s[0].count(EMPTY)
 
-    # Calculate the number of surrounded pieces.
-    surrounded_pieces = 0
-    for i in range(7):
-        for j in range(7):
-            if s[0][i][j] == 1:
-                surrounded = True
-                if i > 0 and s[0][i - 1][j] != 1:
-                    surrounded = False
-                if i < 6 and s[0][i + 1][j] != 1:
-                    surrounded = False
-                if j > 0 and s[0][i][j - 1] != 1:
-                    surrounded = False
-                if j < 6 and s[0][i][j + 1] != 1:
-                    surrounded = False
-                if surrounded:
-                    surrounded_pieces += 1
+    # Convert game board matrix to numpy array
+    board = np.array(s[0])
+    board = board.reshape((10, 10))
+
+    # Calculate the number of surrounded pieces
+    num_surrounded_pieces = 0
+    for i in range(1, 9):
+        for j in range(1, 9):
+            if board[i][j] != EMPTY:
+                submatrix = board[i - 1:i + 2, j - 1:j + 2]
+                num_surrounded_pieces += (np.count_nonzero(submatrix == EMPTY) == 0)
 
     # Calculate the mobility.
-    mobility = 0
-    for i in range(7):
-        for j in range(7):
-            if s[0][i][j][0] == 0 and s[0][i][j] == 0:
-                mobility += 1
-            elif s[0][i][j] == 1:
-                mobility += 1
+    legal_moves = legalMoves(s)
+    num_legal_moves = len(legal_moves)
+    num_opponent_legal_moves = len(legalMoves([s[0], 0, COMPUTER if isHumTurn(s) else HUMAN, False]))
 
     # Calculate the control of the center.
-    center = 0
-    for i in range(3, 6):
-        for j in range(3, 6):
-            if s[0][i][j] == 1:
-                center += 1
-            elif s[0][i][j] == 0:
-                center -= 1
+    submatrix = board[4:6, 4:6]
+    control_of_center = np.count_nonzero(submatrix == COMPUTER)
 
     # Calculate the heuristic value.
-    s[1] = ((COMPUTER_value - HUMAN_value) + EMPTY_value*0.5 + surrounded_pieces + mobility*2 + center*5)
-    ### your code here ###
+    s[1] = ((COMPUTER_value - HUMAN_value) +
+            EMPTY_value * 0.5 +
+            num_surrounded_pieces * 20 +
+            (num_legal_moves - num_opponent_legal_moves) * 5 +
+            control_of_center * 10)
     return s[1]
+
 
 
 def isFinished(s):

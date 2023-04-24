@@ -1,4 +1,5 @@
 import copy
+import NumPy as np
 EMPTY, BLACK, WHITE = '.', '●', '○'
 HUMAN, COMPUTER = '●', '○'
 
@@ -77,9 +78,35 @@ def inputMove(s):
 
 
 def value(s):
-#Returns the heuristic value of s
-        s[1]=1  ### your code here ###
-        return s[1]
+    #Returns the heuristic value of s
+    COMPUTER_value =0
+    HUMAN_value =0
+    EMPTY_value = 0
+    """
+     Calculates the heuristic value for the given board and player.
+    
+     Args:
+       board: The current board state.
+       player: The current player.
+    
+     Returns:
+       The heuristic value for the given board and player.
+     """
+    # Calculate the number of pieces for each player.
+    # Calculate the number of empty squares.
+    COMPUTER_value = s[0].count(COMPUTER)
+    HUMAN_value = s[0].count(HUMAN)
+    EMPTY_value = s[0].count(EMPTY)
+    # Calculate the number of surrounded pieces.
+    num_surrounded_pieces = np.count_nonzero(
+        np.all(s[0] == COMPUTER, axis = 2 )
+
+    # Calculate the mobility.
+    # Calculate the control of the center.
+    # Calculate the heuristic value.
+    ### your code here ###
+    return s[1]
+
 
 def isFinished(s):
 #Returns True if the game ended

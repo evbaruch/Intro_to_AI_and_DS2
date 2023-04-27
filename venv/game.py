@@ -23,9 +23,20 @@ The state of the game is represented by a list of 4 items:
 #The user decides who plays first
 def whoIsFirst(s):
     global HUMAN,COMPUTER
-
-    s[2]=HUMAN ### your code here ###
-
+    ### your code here ###
+    print("Please indicate the initial player for this game.")
+    while True:
+        choice = input("Human (h)\nComputer (c)\n")
+        if choice.lower() == "h":
+            HUMAN, COMPUTER = '●', '○'
+            s[2] = HUMAN
+            break
+        elif choice.lower() == "c":
+            HUMAN, COMPUTER = '○', '●'
+            s[2] = COMPUTER
+            break
+        else:
+            print("Invalid choice. Please enter 'h' for human or 'c' for computer.")
     return s
 
 def isHumTurn(s):
@@ -116,10 +127,21 @@ def value(s):
 
 def isFinished(s):
 #Returns True if the game ended
-
     ### your code here ###
+    # Returns True if the game ended
+    if s[3]:
+        return True
 
-    return (s[3])
+    if len(legalMoves(s)) > 0:
+        return False
+
+    # Switch the turn to the other player if they can make a move
+    s[2] = HUMAN if s[2] == COMPUTER else COMPUTER
+    if len(legalMoves(s)) > 0:
+        return False
+
+    # No moves left for either player
+    return True
 
 def isLegal(move, s):
     hasbracket = lambda direction: findBracket(move, s, direction)

@@ -92,7 +92,7 @@ def value(s):
     #Returns the heuristic value of s
     COMPUTER_value = s[0].count(COMPUTER)
     HUMAN_value = s[0].count(HUMAN)
-    EMPTY_value = s[0].count(EMPTY)
+    EMPTY_value = s[0][11:89].count(EMPTY)
 
     # Convert game board matrix to numpy array
     board = np.array(s[0])
@@ -130,6 +130,7 @@ def isFinished(s):
     ### your code here ###
     # Returns True if the game ended
     if s[3]:
+        s[1] = VIC if s[0].count(HUMAN) > s[0].count(COMPUTER) else TIE if s[0].count(HUMAN) == s[0].count(COMPUTER) else LOSS
         return True
 
     if len(legalMoves(s)) > 0:
@@ -178,7 +179,7 @@ def makeMove(move, s):
     for d in DIRECTIONS:
         makeFlips(move, s, d)
     value(s)
-    changePlayer (s)
+    changePlayer(s)
     return s
 
 def whoWin (s):

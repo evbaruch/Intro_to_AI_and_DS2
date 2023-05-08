@@ -1,20 +1,20 @@
 import alphaBetaPrunning
 import game
-oneMoreChance = False
-board=game.create()
+
+board = game.create()
+# call the function to decide who is first
 game.whoIsFirst(board)
-while not game.isFinished(board) or oneMoreChance:
+
+while game.anyLegalMove(board):
     if game.isHumTurn(board):
         game.inputMove(board)
     else:
-        board=alphaBetaPrunning.go(board)
-    if (game.isFinished(board) and not(oneMoreChance)):
-        if (game.anyLegalMove(board)):
-            print ("No more moves - One more chance")
-            game.changePlayer(board)
-        else:
-            oneMoreChance = False
-    else:
-        oneMoreChance=False
-game.printState(board)
+        board = alphaBetaPrunning.go(board)
 
+    if (not game.anyLegalMove(board)):
+        print("Player ", board[2], " :")
+        game.changePlayer(board)
+        print("You have no more moves", "\n", "Change player to ", board[2], "\n")
+
+game.isFinished(board)
+game.printState(board)

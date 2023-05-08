@@ -87,9 +87,19 @@ def inputMove(s):
             flag=False
             makeMove(move,s)
 
-
+#Returns the heuristic value of s
 def value(s):
-    #Returns the heuristic value of s
+    # this is the heuristic function
+    # it is a linear combination of the following features:
+    # 1. The difference in the number of pieces of the two players.
+    # 2. The difference in the number of legal moves of the two players (mobility).
+    # 3. The difference in the number of pieces in the center of the board.
+    # 4. The difference in the number of pieces that are surrounded by the opponent's pieces.
+    # 5. The difference in the number of pieces that are in the corners.
+
+    # and retuns the heuristic value of the givin state to the computer.
+    # using a calculation using all the features above.
+    #(we found the calculation and features in a paper about the game from harvard university so it is most likley to be correct)
     COMPUTER_value = s[0].count(COMPUTER)
     HUMAN_value = s[0].count(HUMAN)
     EMPTY_value = s[0][11:89].count(EMPTY)
@@ -107,6 +117,7 @@ def value(s):
                 num_surrounded_pieces += (np.count_nonzero(submatrix == EMPTY) == 0)
 
     # Calculate the mobility.
+    # The mobility is the number of legal moves for the player.
     legal_moves = legalMoves(s)
     num_legal_moves = len(legal_moves)
     num_opponent_legal_moves = len(legalMoves([s[0], 0, COMPUTER if isHumTurn(s) else HUMAN, False]))
@@ -115,12 +126,24 @@ def value(s):
     submatrix = board[4:6, 4:6]
     control_of_center = np.count_nonzero(submatrix == COMPUTER)
 
+    # Calculate the control of the corners.
+    # The corners are the 4 corners of the board.
+    corners = [11, 12, 13, 14, 15, 16, 17, 18, 21, 28, 31, 38,
+               41, 48, 51, 58, 61, 68, 71, 78, 81, 88]
+    control_of_corners = 0
+    for corner in corners:
+        control_of_corners += (s[0][corner] == COMPUTER) - (s[0][corner] == HUMAN)
+
     # Calculate the heuristic value.
+    # The heuristic value is a linear combination of the features above.
+    # The weights of the features were confirmed by the paper from harvard university.
     s[1] = ((COMPUTER_value - HUMAN_value) +
-            EMPTY_value * 0.5 +
-            num_surrounded_pieces * 20 +
-            (num_legal_moves - num_opponent_legal_moves) * 5 +
-            control_of_center * 10)
+            (EMPTY_value * 0.5) +
+            (num_surrounded_pieces * 20) +
+            ((num_legal_moves - num_opponent_legal_moves) * 5) +
+            (control_of_center * 5) +
+            (control_of_corners * 25))
+
     return s[1]
 
 
@@ -129,14 +152,25 @@ def isFinished(s):
 #Returns True if the game ended
     ### your code here ###
     # Returns True if the game ended
+    # The game ends when there are no more legal moves for both players
+    # or when the board is full.
+
+    # Check if the game is over
     if s[3]:
-        s[1] = VIC if s[0].count(HUMAN) > s[0].count(COMPUTER) else TIE if s[0].count(HUMAN) == s[0].count(COMPUTER) else LOSS
+        # Check who won
+        s[1] = VIC if s[0].count(HUMAN) < s[0].count(COMPUTER) else TIE if s[0].count(HUMAN) == s[0].count(COMPUTER) else LOSS
         return True
 
+    # check if the current player can make a move
+    # if not, switch the turn to the other player
+    # if the other player can't make a move either, the game is over
+    # and we check who won
     if len(legalMoves(s)) > 0:
         return False
 
     # Switch the turn to the other player if they can make a move
+    # If the other player can't make a move either, the game is over
+    # and we check who won
     s[2] = HUMAN if s[2] == COMPUTER else COMPUTER
     if len(legalMoves(s)) > 0:
         return False

@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 EMPTY, BLACK, WHITE = '.', '●', '○'
 HUMAN, COMPUTER = '●', '○'
 
@@ -22,9 +23,20 @@ The state of the game is represented by a list of 4 items:
 #The user decides who plays first
 def whoIsFirst(s):
     global HUMAN,COMPUTER
-
-    s[2]=HUMAN ### your code here ###
-
+    ### your code here ###
+    print("Please indicate the initial player for this game.")
+    while True:
+        choice = input("Human (h)\nComputer (c)\n")
+        if choice.lower() == "h":
+            HUMAN, COMPUTER = '●', '○'
+            s[2] = HUMAN
+            break
+        elif choice.lower() == "c":
+            HUMAN, COMPUTER = '○', '●'
+            s[2] = COMPUTER
+            break
+        else:
+            print("Invalid choice. Please enter 'h' for human or 'c' for computer.")
     return s
 
 def isHumTurn(s):
@@ -78,72 +90,59 @@ def inputMove(s):
 
 def value(s):
     #Returns the heuristic value of s
-    COMPUTER_value =0
-    HUMAN_value =0
-    EMPTY_value = 0
-    """
-     Calculates the heuristic value for the given board and player.
-    
-     Args:
-       board: The current board state.
-       player: The current player.
-    
-     Returns:
-       The heuristic value for the given board and player.
-     """
-    # Calculate the number of pieces for each player.
-    # Calculate the number of empty squares.
     COMPUTER_value = s[0].count(COMPUTER)
     HUMAN_value = s[0].count(HUMAN)
-    EMPTY_value = s[0].count(EMPTY)
+    EMPTY_value = s[0][11:89].count(EMPTY)
 
-    # Calculate the number of surrounded pieces.
-    surrounded_pieces = 0
-    for i in range(7):
-        for j in range(7):
-            if s[0][i][j] == 1:
-                surrounded = True
-                if i > 0 and s[0][i - 1][j] != 1:
-                    surrounded = False
-                if i < 6 and s[0][i + 1][j] != 1:
-                    surrounded = False
-                if j > 0 and s[0][i][j - 1] != 1:
-                    surrounded = False
-                if j < 6 and s[0][i][j + 1] != 1:
-                    surrounded = False
-                if surrounded:
-                    surrounded_pieces += 1
+    # Convert game board matrix to numpy array
+    board = np.array(s[0])
+    board = board.reshape((10, 10))
+
+    # Calculate the number of surrounded pieces
+    num_surrounded_pieces = 0
+    for i in range(1, 9):
+        for j in range(1, 9):
+            if board[i][j] != EMPTY:
+                submatrix = board[i - 1:i + 2, j - 1:j + 2]
+                num_surrounded_pieces += (np.count_nonzero(submatrix == EMPTY) == 0)
 
     # Calculate the mobility.
-    mobility = 0
-    for i in range(7):
-        for j in range(7):
-            if s[0][i][j][0] == 0 and s[0][i][j] == 0:
-                mobility += 1
-            elif s[0][i][j] == 1:
-                mobility += 1
+    legal_moves = legalMoves(s)
+    num_legal_moves = len(legal_moves)
+    num_opponent_legal_moves = len(legalMoves([s[0], 0, COMPUTER if isHumTurn(s) else HUMAN, False]))
 
     # Calculate the control of the center.
-    center = 0
-    for i in range(3, 6):
-        for j in range(3, 6):
-            if s[0][i][j] == 1:
-                center += 1
-            elif s[0][i][j] == 0:
-                center -= 1
+    submatrix = board[4:6, 4:6]
+    control_of_center = np.count_nonzero(submatrix == COMPUTER)
 
     # Calculate the heuristic value.
-    s[1] = ((COMPUTER_value - HUMAN_value) + EMPTY_value*0.5 + surrounded_pieces + mobility*2 + center*5)
-    ### your code here ###
+    s[1] = ((COMPUTER_value - HUMAN_value) +
+            EMPTY_value * 0.5 +
+            num_surrounded_pieces * 20 +
+            (num_legal_moves - num_opponent_legal_moves) * 5 +
+            control_of_center * 10)
     return s[1]
+
 
 
 def isFinished(s):
 #Returns True if the game ended
-
     ### your code here ###
+    # Returns True if the game ended
+    if s[3]:
+        s[1] = VIC if s[0].count(HUMAN) > s[0].count(COMPUTER) else TIE if s[0].count(HUMAN) == s[0].count(COMPUTER) else LOSS
+        return True
 
-    return (s[3])
+    if len(legalMoves(s)) > 0:
+        return False
+
+    # Switch the turn to the other player if they can make a move
+    s[2] = HUMAN if s[2] == COMPUTER else COMPUTER
+    if len(legalMoves(s)) > 0:
+        return False
+
+    # No moves left for either player
+    return True
 
 def isLegal(move, s):
     hasbracket = lambda direction: findBracket(move, s, direction)
@@ -180,7 +179,7 @@ def makeMove(move, s):
     for d in DIRECTIONS:
         makeFlips(move, s, d)
     value(s)
-    changePlayer (s)
+    changePlayer(s)
     return s
 
 def whoWin (s):

@@ -2,7 +2,7 @@ import alphaBetaPrunning
 import game
 oneMoreChance = False
 board=game.create()
-#game.whoIsFirst(board)
+game.whoIsFirst(board)
 while not game.isFinished(board) or oneMoreChance:
     if game.isHumTurn(board):
         game.inputMove(board)

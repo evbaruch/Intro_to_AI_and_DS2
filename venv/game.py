@@ -23,8 +23,14 @@ The state of the game is represented by a list of 4 items:
 #The user decides who plays first
 def whoIsFirst(s):
     global HUMAN,COMPUTER
-    ### your code here ###
     print("Please indicate the initial player for this game.")
+    # this is a loop that will run until the user enters a valid choice
+    # the user can enter either 'h' for human or 'c' for computer
+    # the user's choice should be stored in s[2]
+    # if the user enters 'h' then HUMAN should be set to '●' and COMPUTER to '○'
+    # if the user enters 'c' then HUMAN should be set to '○' and COMPUTER to '●'
+    # if the user enters anything else then print "Invalid choice. Please enter 'h' for human or 'c' for computer."
+    # and ask the user to enter again
     while True:
         choice = input("Human (h)\nComputer (c)\n")
         if choice.lower() == "h":
@@ -90,16 +96,21 @@ def inputMove(s):
 #Returns the heuristic value of s
 def value(s):
     # this is the heuristic function
+    # the function's goel is to calculate the heuristic value of the givin state for the computer.
+    # so the computer can decide which move is the best for him.
     # it is a linear combination of the following features:
     # 1. The difference in the number of pieces of the two players.
-    # 2. The difference in the number of legal moves of the two players (mobility).
-    # 3. The difference in the number of pieces in the center of the board.
-    # 4. The difference in the number of pieces that are surrounded by the opponent's pieces.
+    # 2. the difference in number of surrounded pieces for each player.
+    # 3. The difference in the number of legal moves of the two players (mobility).
+    # 4. The difference in the number of pieces in the center of the board.
     # 5. The difference in the number of pieces that are in the corners.
-
-    # and retuns the heuristic value of the givin state to the computer.
+    # the reason we chose these features is because these features are the ones that will most likley to affect the game.
+    # and deciding which move is the best for the computer and who has the best chances to win.
+    # and returns the heuristic value of the givin state to the computer.
     # using a calculation using all the features above.
     #(we found the calculation and features in a paper about the game from harvard university so it is most likley to be correct)
+
+    #1. Calculate the number of pieces of each player
     COMPUTER_value = s[0].count(COMPUTER)
     HUMAN_value = s[0].count(HUMAN)
     EMPTY_value = s[0][11:89].count(EMPTY)
@@ -108,7 +119,7 @@ def value(s):
     board = np.array(s[0])
     board = board.reshape((10, 10))
 
-    # Calculate the number of surrounded pieces
+    #2. Calculate the number of surrounded pieces for each player.
     num_surrounded_pieces = 0
     for i in range(1, 9):
         for j in range(1, 9):
@@ -116,17 +127,17 @@ def value(s):
                 submatrix = board[i - 1:i + 2, j - 1:j + 2]
                 num_surrounded_pieces += (np.count_nonzero(submatrix == EMPTY) == 0)
 
-    # Calculate the mobility.
+    #3. Calculate the mobility.
     # The mobility is the number of legal moves for the player.
     legal_moves = legalMoves(s)
     num_legal_moves = len(legal_moves)
     num_opponent_legal_moves = len(legalMoves([s[0], 0, COMPUTER if isHumTurn(s) else HUMAN, False]))
 
-    # Calculate the control of the center.
+    #4. Calculate the control of the center.
     submatrix = board[4:6, 4:6]
     control_of_center = np.count_nonzero(submatrix == COMPUTER)
 
-    # Calculate the control of the corners.
+    #5. Calculate the control of the corners.
     # The corners are the 4 corners of the board.
     corners = [11, 12, 13, 14, 15, 16, 17, 18, 21, 28, 31, 38,
                41, 48, 51, 58, 61, 68, 71, 78, 81, 88]
@@ -138,11 +149,11 @@ def value(s):
     # The heuristic value is a linear combination of the features above.
     # The weights of the features were confirmed by the paper from harvard university.
     s[1] = ((COMPUTER_value - HUMAN_value) +
-            (EMPTY_value * 0.5) +
-            (num_surrounded_pieces * 20) +
-            ((num_legal_moves - num_opponent_legal_moves) * 5) +
-            (control_of_center * 5) +
-            (control_of_corners * 25))
+            EMPTY_value * 0.5 +
+            num_surrounded_pieces * 20 +
+            (num_legal_moves - num_opponent_legal_moves) * 5 +
+            control_of_center * 5 +
+            control_of_corners * 25)
 
     return s[1]
 

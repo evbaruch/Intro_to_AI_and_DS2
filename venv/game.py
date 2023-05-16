@@ -1,3 +1,5 @@
+# evyatar baruch - 323916403
+# sapir bashan - 214103368
 import copy
 import numpy as np
 EMPTY, BLACK, WHITE = '.', '●', '○'

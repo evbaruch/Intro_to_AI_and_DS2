@@ -19,7 +19,15 @@ The state of the game is represented by a list of 4 items:
 3. flag to end game
 
 '''
-
+# we understood that the colors on the bourd don't neet to swich but the player who starts needs to always be black
+# if we understood wrong and in case that the human starts the colors on the bored need to change this would be the code
+#
+#  if choice.lower() == "h":
+#            HUMAN, COMPUTER = '●', '○'
+#            s[2] = HUMAN
+#            s[0][44], s[0][45] = BLACK ,WHITE
+#            s[0][54], s[0][55] = WHITE, BLACK
+#            break
 #The user decides who plays first
 def whoIsFirst(s):
     global HUMAN,COMPUTER
@@ -155,6 +163,7 @@ def value(s):
             control_of_center * 5 +
             control_of_corners * 25)
 
+    # Return the heuristic value
     return s[1]
 
 
